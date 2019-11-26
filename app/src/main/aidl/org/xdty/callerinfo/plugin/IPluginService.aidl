@@ -8,4 +8,8 @@ interface IPluginService {
     void hangUpPhoneCall();
     void updateCallLog(String number, String name);
     void registerCallback(IPluginServiceCallback callback);
+    String exportData(String data);
+    String importData();
+    void checkStoragePermission();
+    void setIconStatus(boolean enabled);
 }

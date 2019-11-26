@@ -17,7 +17,61 @@
         <item>@color/graphite</item>
     </array>
     <array name="api_type">
-        <item>@string/api_baidu</item>
         <item>@string/api_juhe</item>
+        <item>@string/api_sogou</item>
+    </array>
+    <string-array name="align_type">
+        <item>@string/align_left</item>
+        <item>@string/align_center</item>
+        <item>@string/align_right</item>
+    </string-array>
+    <string-array name="mark_type">
+        <item>@string/harassment</item>
+        <item>@string/fraud</item>
+        <item>@string/advertising</item>
+        <item>@string/express_delivery</item>
+        <item>@string/restaurant_deliver</item>
+    </string-array>
+
+    <string-array name="mark_type_source">
+        <item>@string/type_harassment</item>
+        <item>@string/type_fraud</item>
+        <item>@string/type_advertising</item>
+        <item>@string/type_express_delivery</item>
+        <item>@string/type_restaurant_deliver</item>
+    </string-array>
+    <array name="repeated_incoming_count">
+        <item>@string/repeated_incoming_twice</item>
+        <item>@string/repeated_incoming_third</item>
+        <item>@string/repeated_incoming_fourth</item>
+        <item>@string/repeated_incoming_fifth</item>
+    </array>
+    <integer-array name="source_keys">
+        <item>-1000</item>
+        <item>-200</item>
+        <item>-150</item>
+        <item>-100</item>
+        <item>-50</item>
+        <item>-2</item>
+        <item>-1</item>
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>8</item>
+        <item>1000</item>
+    </integer-array>
+    <array name="source_values">
+        <item>@string/source_special</item>
+        <item>@string/source_common</item>
+        <item>@string/source_caller</item>
+        <item>@string/source_marked</item>
+        <item>@string/source_mvno</item>
+        <item>@string/source_offline</item>
+        <item>@string/source_google</item>
+        <item>@string/source_baidu</item>
+        <item>@string/source_juhe</item>
+        <item>@string/source_soguo</item>
+        <item>@string/source_cloud</item>
+        <item>@string/source_custom</item>
     </array>
 </resources>

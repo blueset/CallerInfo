@@ -1,71 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    package="org.xdty.callerinfo"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="org.xdty.callerinfo">
 
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
-    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission
+        android:name="android.permission.READ_LOGS"
+        tools:ignore="ProtectedPermissions" />
+
+    <uses-sdk tools:overrideLibrary="android.support.customtabs,net.openid.appauth" />
 
     <application
-        android:name="org.xdty.callerinfo.application.Application"
+        android:name=".application.Application"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
         <activity
             android:name=".activity.MainActivity"
             android:clearTaskOnLaunch="true"
+            android:configChanges="orientation|screenSize"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".activity.SettingsActivity"
             android:label="@string/action_settings">
+            <intent-filter>
+                <action android:name="org.xdty.callerinfo.action.PLUGIN_SETTING" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".activity.LicensesActivity"
             android:label="@string/license">
             <intent-filter>
-                <action android:name="org.xdty.callerinfo.action.VIEW_LICENSES"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="org.xdty.callerinfo.action.VIEW_LICENSES" />
+                <action android:name="org.xdty.callerinfo.action.VIEW_PRIVACY" />
+                <action android:name="org.xdty.callerinfo.action.VIEW_FEATURE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".activity.MarkActivity"
+            android:excludeFromRecents="true"
+            android:label="@string/app_name"
+            android:noHistory="true"
+            android:taskAffinity=".activity.MarkActivity"
+            android:theme="@style/Theme.AppCompat.Light.Dialog" />
+        <activity
+            android:name=".activity.AppealActivity"
+            android:label="@string/number_appeal">
+            <intent-filter>
+                <action android:name="org.xdty.callerinfo.NUMBER_APPEAL" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
-        <service android:name=".service.FloatWindow"/>
+        <activity
+            android:name="net.openid.appauth.RedirectUriReceiverActivity"
+            tools:node="replace">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
-        <receiver android:name=".receiver.IncomingCall">
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="org.xdty.callerinfo" />
+            </intent-filter>
+        </activity>
+
+        <service android:name=".service.FloatWindow" />
+        <service android:name=".service.MarkWindow" />
+        <service android:name=".service.ScheduleService" />
+
+        <receiver
+            android:name=".receiver.IncomingCall"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter android:priority="999">
-                <action android:name="android.intent.action.PHONE_STATE"/>
-                <action android:name="android.intent.action.NEW_OUTGOING_CALL"/>
+                <action android:name="android.intent.action.PHONE_STATE" />
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
 
         <meta-data
             android:name="org.xdty.phone.number.API_KEY"
-            android:value="${API_KEY}"/>
+            android:value="${API_KEY}" />
         <meta-data
             android:name="org.xdty.phone.number.JUHE_API_KEY"
-            android:value="${JUHE_API_KEY}"/>
+            android:value="${JUHE_API_KEY}" />
         <meta-data
-            android:name="DATABASE"
-            android:value="phone_number.db"/>
+            android:name="org.xdty.phone.number.LEANCLOUD_APP_ID"
+            android:value="${LEANCLOUD_APP_ID}" />
         <meta-data
-            android:name="VERSION"
-            android:value="4"/>
-        <meta-data
-            android:name="QUERY_LOG"
-            android:value="true"/>
-        <meta-data
-            android:name="DOMAIN_PACKAGE_NAME"
-            android:value="org.xdty.callerinfo.model.db"/>
+            android:name="org.xdty.phone.number.LEANCLOUD_APP_KEY"
+            android:value="${LEANCLOUD_APP_KEY}" />
     </application>
 
 </manifest>

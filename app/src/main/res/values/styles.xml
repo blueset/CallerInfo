@@ -17,4 +17,55 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
+    <style name="TransparentTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="background">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:color/transparent</item>
+    </style>
+
+    <style name="circle_image_style">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="border">true</item>
+        <item name="border_color">#D4E157</item>
+        <item name="border_width">4dp</item>
+        <item name="selector_stroke_color">#8BC34A</item>
+        <item name="selector">true</item>
+        <item name="shadow">true</item>
+    </style>
+
+    <style name="MarkDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">#FFC107</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:background">#4CAF50</item>
+        <item name="android:windowMinWidthMinor">85%</item>
+    </style>
+
+    <style name="BottomSheetTextStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:drawablePadding">5dp</item>
+    </style>
+
+    <style name="BottomSheetTagButtonStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:drawablePadding">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+
 </resources>

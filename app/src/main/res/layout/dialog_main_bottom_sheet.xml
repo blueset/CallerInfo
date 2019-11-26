@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/bottom_sheet"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:background="@color/white"
+        android:padding="@dimen/activity_horizontal_margin">
+
+        <TextView
+            android:id="@+id/number"
+            style="@style/BottomSheetTextStyle"
+            android:drawableLeft="@drawable/ic_call_white_18dp"
+            android:drawableStart="@drawable/ic_call_white_18dp"/>
+
+        <TextView
+            android:id="@+id/geo"
+            style="@style/BottomSheetTextStyle"
+            android:drawableLeft="@drawable/ic_location_on_white_18dp"
+            android:drawableStart="@drawable/ic_location_on_white_18dp"/>
+
+        <TextView
+            android:id="@+id/time"
+            style="@style/BottomSheetTextStyle"
+            android:drawableLeft="@drawable/ic_date_range_white_18dp"
+            android:drawableStart="@drawable/ic_date_range_white_18dp"/>
+
+        <TextView
+            android:id="@+id/ring_time"
+            style="@style/BottomSheetTextStyle"
+            android:drawableLeft="@drawable/ic_notifications_none_white_18dp"
+            android:drawableStart="@drawable/ic_notifications_none_white_18dp"/>
+
+        <TextView
+            android:id="@+id/duration"
+            style="@style/BottomSheetTextStyle"
+            android:drawableLeft="@drawable/ic_update_white_18dp"
+            android:drawableStart="@drawable/ic_update_white_18dp"/>
+
+        <TextView
+            android:id="@+id/name"
+            style="@style/BottomSheetTextStyle"
+            android:drawableLeft="@drawable/ic_flag_white_18dp"
+            android:drawableStart="@drawable/ic_flag_white_18dp"/>
+
+        <TextView
+            android:id="@+id/source"
+            style="@style/BottomSheetTextStyle"
+            android:drawableLeft="@drawable/ic_cloud_download_white_18dp"
+            android:drawableStart="@drawable/ic_cloud_download_white_18dp"/>
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="fill_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:background="#90ffffff"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/edit"
+            style="@style/BottomSheetTextStyle"
+            android:drawableLeft="@drawable/ic_mode_edit_white_18dp"
+            android:drawableStart="@drawable/ic_mode_edit_white_18dp"
+            android:text="@string/modify_mark"
+            android:visibility="gone"/>
+
+        <org.apmem.tools.layouts.FlowLayout
+            android:id="@+id/tags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/fraud"
+                style="@style/BottomSheetTagButtonStyle"
+                android:drawableLeft="@drawable/ic_money_off_white_18dp"
+                android:drawableStart="@drawable/ic_money_off_white_18dp"
+                android:text="@string/fraud"/>
+
+            <Button
+                android:id="@+id/harassment"
+                style="@style/BottomSheetTagButtonStyle"
+                android:drawableLeft="@drawable/ic_do_not_disturb_white_18dp"
+                android:drawableStart="@drawable/ic_do_not_disturb_white_18dp"
+                android:text="@string/harassment"/>
+
+            <Button
+                android:id="@+id/advertising"
+                style="@style/BottomSheetTagButtonStyle"
+                android:drawableLeft="@drawable/ic_remove_shopping_cart_white_18dp"
+                android:drawableStart="@drawable/ic_remove_shopping_cart_white_18dp"
+                android:text="@string/advertising"/>
+
+            <Button
+                android:id="@+id/express"
+                style="@style/BottomSheetTagButtonStyle"
+                android:drawableLeft="@drawable/ic_local_shipping_white_18dp"
+                android:drawableStart="@drawable/ic_local_shipping_white_18dp"
+                android:text="@string/express_delivery"/>
+
+            <Button
+                android:id="@+id/restaurant"
+                style="@style/BottomSheetTagButtonStyle"
+                android:drawableLeft="@drawable/ic_restaurant_white_18dp"
+                android:drawableStart="@drawable/ic_restaurant_white_18dp"
+                android:text="@string/restaurant_deliver"/>
+
+            <Button
+                android:id="@+id/custom"
+                style="@style/BottomSheetTagButtonStyle"
+                android:drawableLeft="@drawable/ic_bookmark_border_white_18dp"
+                android:drawableStart="@drawable/ic_bookmark_border_white_18dp"
+                android:text="@string/custom"/>
+
+            <EditText
+                android:id="@+id/custom_text"
+                style="@style/BottomSheetTextStyle"
+                android:layout_width="120dp"
+                android:background="@null"
+                android:hint="@string/custom_tag_hint"
+                android:inputType="text"
+                android:textColorHint="@color/white"
+                android:textSize="12sp"
+                android:visibility="gone"/>
+        </org.apmem.tools.layouts.FlowLayout>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:src="@drawable/ic_mode_edit_white_48dp"
+        android:visibility="gone"
+        app:backgroundTint="@color/colorAccent"
+        app:layout_anchor="@id/bottom_sheet"
+        app:layout_anchorGravity="top|end"/>
+</FrameLayout>

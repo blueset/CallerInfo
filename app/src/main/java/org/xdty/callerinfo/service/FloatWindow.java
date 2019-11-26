@@ -4,22 +4,23 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.TypedValue;
-import android.view.Display;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.xdty.callerinfo.R;
+import org.xdty.callerinfo.application.Application;
+import org.xdty.callerinfo.model.setting.Setting;
 import org.xdty.callerinfo.utils.Utils;
+
+import javax.inject.Inject;
 
 import wei.mark.standout.StandOutWindow;
 import wei.mark.standout.constants.StandOutFlags;
@@ -31,29 +32,50 @@ public class FloatWindow extends StandOutWindow {
 
     public final static String NUMBER_INFO = "number_info";
     public final static String TEXT_SIZE = "text_size";
+    public final static String TEXT_PADDING = "text_padding";
+    public final static String WINDOW_HEIGHT = "window_height";
     public final static String WINDOW_TRANS = "window_trans";
     public final static String WINDOW_COLOR = "window_color";
     public final static String WINDOW_ERROR = "window_error";
-    public final static String WINDOW = "window";
-
     public final static int CALLER_FRONT = 1000;
     public final static int SET_POSITION_FRONT = 1001;
     public final static int SETTING_FRONT = 1002;
     public final static int SEARCH_FRONT = 1003;
+    public final static int STATUS_CLOSE = 0;
+    public final static int TEXT_ALIGN_LEFT = 0;
+    public final static int TEXT_ALIGN_CENTER = 1;
+    public final static int TEXT_ALIGN_RIGHT = 2;
+    private final static int STATUS_SHOWING = 1;
+    private final static int STATUS_HIDE = 2;
+    private static int mShowingStatus = STATUS_CLOSE;
 
-    SharedPreferences sharedPreferences;
+    @Inject
+    Setting mSettings;
+
     private boolean isFirstShow = false;
     private boolean isFocused = false;
+
+    // TODO: move status at utils
+    public static int status() {
+        return mShowingStatus;
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
+            Application.getApplication().getAppComponent().inject(this);
             return super.onStartCommand(intent, flags, startId);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             stopSelf(startId);
         }
         return START_NOT_STICKY;
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        Context context = Utils.changeLang(newBase);
+        super.attachBaseContext(context);
     }
 
     @Override
@@ -68,8 +90,6 @@ public class FloatWindow extends StandOutWindow {
 
     @Override
     public void createAndAttachView(int id, FrameLayout frame) {
-        Utils.checkLocale(getBaseContext());
-
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.float_window, frame, true);
     }
@@ -78,43 +98,39 @@ public class FloatWindow extends StandOutWindow {
     @Override
     public StandOutLayoutParams getParams(int id, Window window) {
 
-        WindowManager mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-        Display display = mWindowManager.getDefaultDisplay();
-        Point point = new Point();
-        display.getSize(point);
+        StandOutLayoutParams params = new StandOutLayoutParams(id, mSettings.getScreenWidth(),
+                mSettings.getWindowHeight(), StandOutLayoutParams.CENTER,
+                StandOutLayoutParams.CENTER);
 
-        int height = point.y / 8;
-
-        StandOutLayoutParams standOutLayoutParams = new StandOutLayoutParams(id, point.x, height,
-                StandOutLayoutParams.CENTER, StandOutLayoutParams.CENTER);
-
-        sharedPreferences = getSharedPreferences(WINDOW, Context.MODE_PRIVATE);
-
-        int x = sharedPreferences.getInt("x", -1);
-        int y = sharedPreferences.getInt("y", -1);
+        int x = mSettings.getWindowX();
+        int y = mSettings.getWindowY();
 
         if (x != -1 && y != -1) {
-            standOutLayoutParams.x = x;
-            standOutLayoutParams.y = y;
+            params.x = x;
+            params.y = y;
         }
 
         if (id == SETTING_FRONT || id == SEARCH_FRONT) {
-            standOutLayoutParams.y = (int) (height * 1.5);
+            params.y = (int) (mSettings.getDefaultHeight() * 1.5);
         }
 
-        standOutLayoutParams.minWidth = point.x;
-        standOutLayoutParams.maxWidth = point.x;
-        standOutLayoutParams.minHeight = height;
-        if (!isMovable(id)) {
-            standOutLayoutParams.type = StandOutLayoutParams.TYPE_SYSTEM_OVERLAY;
+        params.minWidth = mSettings.getScreenWidth();
+        params.maxWidth = Math.max(mSettings.getScreenWidth(), mSettings.getScreenHeight());
+        params.minHeight = mSettings.getDefaultHeight() / 4;
+        if (isUnmovable(id)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                params.type = StandOutLayoutParams.TYPE_APPLICATION_OVERLAY;
+            } else {
+                params.type = StandOutLayoutParams.TYPE_SYSTEM_OVERLAY;
+            }
         }
-        return standOutLayoutParams;
+        return params;
     }
 
     // move the window by dragging the view
     @Override
     public int getFlags(int id) {
-        if (!isMovable(id)) {
+        if (isUnmovable(id)) {
             return super.getFlags(id) | StandOutFlags.FLAG_WINDOW_FOCUSABLE_DISABLE;
         } else {
             return super.getFlags(id) | StandOutFlags.FLAG_BODY_MOVE_ENABLE
@@ -123,9 +139,9 @@ public class FloatWindow extends StandOutWindow {
         }
     }
 
-    private boolean isMovable(int id) {
+    private boolean isUnmovable(int id) {
         KeyguardManager km = (KeyguardManager) getSystemService(Activity.KEYGUARD_SERVICE);
-        return id != SETTING_FRONT && id != SEARCH_FRONT && !km.inKeyguardRestrictedInputMode();
+        return id == SETTING_FRONT || id == SEARCH_FRONT || km.inKeyguardRestrictedInputMode();
     }
 
     @Override
@@ -145,10 +161,7 @@ public class FloatWindow extends StandOutWindow {
 
     @Override
     public Animation getCloseAnimation(int id) {
-
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean anim = preferences.getBoolean(getString(R.string.window_close_anim_key), true);
-        if (anim) {
+        if (mSettings.isShowCloseAnim()) {
             return super.getCloseAnimation(id);
         } else {
             return null;
@@ -158,23 +171,28 @@ public class FloatWindow extends StandOutWindow {
     @Override
     public boolean onShow(int id, Window window) {
         isFirstShow = true;
+        mShowingStatus = STATUS_SHOWING;
         return super.onShow(id, window);
     }
 
     @Override
     public void onMove(int id, Window window, View view, MotionEvent event) {
         super.onMove(id, window, view, event);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("x", window.getLayoutParams().x);
-        editor.putInt("y", window.getLayoutParams().y);
-        editor.apply();
+        mSettings.setWindow(window.getLayoutParams().x, window.getLayoutParams().y);
     }
 
     @Override
     public boolean onClose(int id, Window window) {
         super.onClose(id, window);
         stopService(getShowIntent(this, getClass(), id));
+        mShowingStatus = STATUS_CLOSE;
         return false;
+    }
+
+    @Override
+    public boolean onHide(int id, Window window) {
+        mShowingStatus = STATUS_HIDE;
+        return super.onHide(id, window);
     }
 
     @Override
@@ -185,10 +203,8 @@ public class FloatWindow extends StandOutWindow {
                 if (layout != null) {
                     layout.setBackgroundResource(0);
                 }
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                boolean hideWhenTouch = preferences.getBoolean(
-                        getString(R.string.hide_when_touch_key), false);
-                if (!isFocused && hideWhenTouch && id == CALLER_FRONT && getWindow(id) != null) {
+                if (!isFocused && mSettings.isHidingWhenTouch() && id == CALLER_FRONT
+                        && getWindow(id) != null) {
                     hide(id);
                 }
                 isFocused = false;
@@ -203,8 +219,10 @@ public class FloatWindow extends StandOutWindow {
         int color = data.getInt(WINDOW_COLOR);
         String text = data.getString(NUMBER_INFO);
         int size = data.getInt(TEXT_SIZE);
+        int height = data.getInt(WINDOW_HEIGHT);
         int trans = data.getInt(WINDOW_TRANS);
         int error = data.getInt(WINDOW_ERROR);
+        int padding = data.getInt(TEXT_PADDING);
         Window window = getWindow(id);
 
         if (window == null) {
@@ -214,21 +232,54 @@ public class FloatWindow extends StandOutWindow {
         View layout = window.findViewById(R.id.content);
         TextView textView = (TextView) window.findViewById(R.id.number_info);
         TextView errorText = (TextView) window.findViewById(R.id.error);
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        boolean isTransBackOnly = preferences.getBoolean(
-                getString(R.string.window_trans_back_only_key), true);
+        if (padding == 0) {
+            padding = mSettings.getTextPadding();
+        }
+
+        if (id == CALLER_FRONT || id == SETTING_FRONT) {
+            int alignType = mSettings.getTextAlignment();
+            int gravity;
+            switch (alignType) {
+                case TEXT_ALIGN_LEFT:
+                    gravity = Gravity.START | Gravity.CENTER;
+                    textView.setPadding(padding, 0, 0, 0);
+                    break;
+                case TEXT_ALIGN_CENTER:
+                    gravity = Gravity.CENTER;
+                    textView.setPadding(0, padding, 0, 0);
+                    break;
+                case TEXT_ALIGN_RIGHT:
+                    gravity = Gravity.END | Gravity.CENTER;
+                    textView.setPadding(0, 0, padding, 0);
+                    break;
+                default:
+                    gravity = Gravity.CENTER;
+                    textView.setPadding(0, padding, 0, 0);
+                    break;
+            }
+            errorText.setGravity(gravity);
+            textView.setGravity(gravity);
+        }
 
         if (size == 0) {
-            size = preferences.getInt(getString(R.string.window_text_size_key), 20);
+            size = mSettings.getTextSize();
+        }
+
+        if (height != 0) {
+            StandOutLayoutParams params = window.getLayoutParams();
+            window.edit().setSize(params.width, height).commit();
         }
 
         if (trans == 0) {
-            trans = preferences.getInt(getString(R.string.window_transparent_key), 80);
+            trans = mSettings.getWindowTransparent();
         }
 
         if (color != 0) {
             layout.setBackgroundColor(color);
+            if (mSettings.isEnableTextColor() && id == CALLER_FRONT) {
+                textView.setTextColor(color);
+            }
         }
 
         if (text != null) {
@@ -237,8 +288,10 @@ public class FloatWindow extends StandOutWindow {
 
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
 
-        if (isTransBackOnly) {
-            layout.getBackground().setAlpha((int) (trans / 100.0 * 255));
+        if (mSettings.isTransBackOnly()) {
+            if (layout.getBackground() != null) {
+                layout.getBackground().setAlpha((int) (trans / 100.0 * 255));
+            }
         } else {
             layout.setAlpha(trans / 100f);
         }
@@ -247,7 +300,6 @@ public class FloatWindow extends StandOutWindow {
             errorText.setVisibility(View.VISIBLE);
             errorText.setText(getString(error));
         }
-
     }
 
     @Override
@@ -259,5 +311,10 @@ public class FloatWindow extends StandOutWindow {
         }
         isFirstShow = false;
         return true;
+    }
+
+    @Override
+    public boolean isDisableMove(int id) {
+        return id == CALLER_FRONT && mSettings.isDisableMove();
     }
 }

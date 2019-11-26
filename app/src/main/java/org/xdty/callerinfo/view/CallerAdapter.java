@@ -1,52 +1,49 @@
 package org.xdty.callerinfo.view;
 
-import android.content.Context;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
+import androidx.core.content.ContextCompat;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.xdty.callerinfo.R;
+import org.xdty.callerinfo.contract.MainContract;
 import org.xdty.callerinfo.model.TextColorPair;
 import org.xdty.callerinfo.model.db.Caller;
 import org.xdty.callerinfo.model.db.InCall;
 import org.xdty.callerinfo.utils.Utils;
-import org.xdty.phone.number.PhoneNumber;
-import org.xdty.phone.number.model.INumber;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class CallerAdapter extends RecyclerView.Adapter<CallerAdapter.ViewHolder> {
 
-    private static Map<String, Caller> callerMap = new HashMap<>();
-    private Context mContext;
-    private List<InCall> mList;
-    private CardView cardView;
+    private static final String TAG = CallerAdapter.class.getSimpleName();
 
-    public CallerAdapter(Context context, List<InCall> list) {
-        mContext = context;
-        mList = list;
-        updateCallerMap();
+    MainContract.Presenter mPresenter;
+
+    private List<InCall> mList;
+
+    public CallerAdapter(MainContract.Presenter presenter) {
+        mPresenter = presenter;
+        mList = new ArrayList<>();
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.card_item, parent, false);
-        return new ViewHolder(mContext, view);
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         InCall inCall = mList.get(position);
-        Caller caller = getCaller(inCall.getNumber());
-        holder.bind(inCall, caller);
+        holder.bind(inCall);
     }
 
     @Override
@@ -54,88 +51,106 @@ public class CallerAdapter extends RecyclerView.Adapter<CallerAdapter.ViewHolder
         return mList.size();
     }
 
-    private Caller getCaller(String number) {
-        Caller caller = callerMap.get(number);
-
-        if (caller == null) {
-            if (number.contains("+86")) {
-                caller = callerMap.get(number.replace("+86", ""));
-            }
-        }
-        return caller;
+    @Override
+    public void onViewRecycled(ViewHolder holder) {
+        super.onViewRecycled(holder);
     }
 
-    private void updateCallerMap() {
-        callerMap.clear();
-        List<Caller> callers = Caller.listAll(Caller.class);
-        for (Caller caller : callers) {
-            String number = caller.getNumber();
-            if (number != null && !number.isEmpty()) {
-                callerMap.put(caller.getNumber(), caller);
-            }
-        }
+    public void replaceData(List<InCall> inCalls) {
+        mList = inCalls;
+        notifyDataSetChanged();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public InCall getItem(int position) {
+        return mList.get(position);
+    }
 
-        Context context;
-        CardView cardView;
-        TextView text;
-        TextView number;
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
+            View.OnLongClickListener {
 
-        public ViewHolder(Context context, View view) {
+        final CardView cardView;
+        final TextView text;
+        final TextView number;
+        final LinearLayout detail;
+        final TextView time;
+        final TextView ringTime;
+        final TextView duration;
+        InCall inCall;
+
+        public ViewHolder(View view) {
             super(view);
-            this.context = context;
             cardView = (CardView) view.findViewById(R.id.card_view);
             text = (TextView) view.findViewById(R.id.text);
             number = (TextView) view.findViewById(R.id.number);
+            detail = (LinearLayout) view.findViewById(R.id.detail);
+            time = (TextView) view.findViewById(R.id.time);
+            ringTime = (TextView) view.findViewById(R.id.ring_time);
+            duration = (TextView) view.findViewById(R.id.duration);
+
+            cardView.setOnClickListener(this);
+            cardView.setOnLongClickListener(this);
         }
 
         public void setAlpha(float alpha) {
             cardView.setAlpha(alpha);
         }
 
-        public void bind(final InCall inCall, Caller caller) {
-            if (caller != null) {
-                TextColorPair t = Utils.getTextColorPair(context, caller);
-                text.setText(t.text);
-                cardView.setCardBackgroundColor(t.color);
-                number.setText(caller.getNumber());
-            } else {
-                if (inCall.isFetched() || TextUtils.isEmpty(inCall.getNumber())) {
+        public void bind(InCall inCall) {
+
+            Caller caller = mPresenter.getCaller(inCall.getNumber());
+
+            if (caller.isEmpty()) {
+                if (caller.isOffline()) {
+                    if (caller.hasGeo()) {
+                        text.setText(caller.getGeo());
+                    } else {
+                        text.setText(R.string.loading);
+                    }
+                    number.setText(inCall.getNumber());
+                    cardView.setCardBackgroundColor(
+                            ContextCompat.getColor(cardView.getContext(), R.color.blue_light));
+                } else {
                     text.setText(R.string.loading_error);
                     number.setText(inCall.getNumber());
                     cardView.setCardBackgroundColor(
-                            ContextCompat.getColor(context, R.color.graphite));
-                } else {
-                    new PhoneNumber(context, new PhoneNumber.Callback() {
-                        @Override
-                        public void onResponseOffline(INumber number) {
-                        }
-
-                        @Override
-                        public void onResponse(INumber number) {
-                            new Caller(number).save();
-                            inCall.setFetched(true);
-                            updateCallerMap();
-                            notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onResponseFailed(INumber number, boolean isOnline) {
-                            inCall.setFetched(true);
-                            updateCallerMap();
-                            notifyDataSetChanged();
-                        }
-                    }).fetch(inCall.getNumber());
-
-                    text.setText(R.string.loading);
-                    number.setText(inCall.getNumber());
-                    cardView.setCardBackgroundColor(
-                            ContextCompat.getColor(context, R.color.blue_light));
+                            ContextCompat.getColor(cardView.getContext(), R.color.graphite));
                 }
+            } else {
+                TextColorPair t = TextColorPair.from(caller);
+                text.setText(t.text);
+                //noinspection ResourceAsColor
+                cardView.setCardBackgroundColor(t.color);
+                number.setText(TextUtils.isEmpty(
+                        caller.getContactName()) ? caller.getNumber() : caller.getContactName());
             }
             cardView.setAlpha(1f);
+            if (inCall.isExpanded()) {
+                detail.setVisibility(View.VISIBLE);
+            } else {
+                detail.setVisibility(View.GONE);
+            }
+            this.inCall = inCall;
+
+            time.setText(Utils.readableDate(inCall.getTime()));
+            ringTime.setText(Utils.readableTime(inCall.getRingTime()));
+            duration.setText(Utils.readableTime(inCall.getDuration()));
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (detail.getVisibility() == View.VISIBLE) {
+                detail.setVisibility(View.GONE);
+                inCall.setExpanded(false);
+            } else {
+                detail.setVisibility(View.VISIBLE);
+                inCall.setExpanded(true);
+            }
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            mPresenter.itemOnLongClicked(inCall);
+            return true;
         }
     }
 }

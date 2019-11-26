@@ -1,26 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
-    package="org.xdty.callerinfo.plugin"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="org.xdty.callerinfo.plugin"
     android:sharedUserId="org.xdty.callerinfo.plugin">
 
     <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS"/>
     <uses-permission android:name="android.permission.WRITE_CALL_LOG"/>
     <uses-permission android:name="android.permission.READ_CALL_LOG"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission
+        android:name="android.permission.MODIFY_PHONE_STATE"
+        tools:ignore="ProtectedPermissions"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_plugin_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <service
             android:name=".PluginService"
             android:enabled="true"
             android:exported="true">
         </service>
 
+        <activity-alias
+            android:name=".Launcher"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+
         <activity android:name=".MainActivity">
+        </activity>
+        <activity android:name=".LicensesActivity">
+            <intent-filter>
+                <action android:name="org.xdty.callerinfo.plugin.action.VIEW_LICENSES"/>
+                <action android:name="org.xdty.callerinfo.plugin.action.VIEW_PRIVACY"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
         </activity>
     </application>
 

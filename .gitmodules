@@ -1,3 +1,9 @@
 [submodule "standOut"]
 	path = standOut
 	url = https://github.com/xdtianyu/StandOut.git
+[submodule "PhoneNumber"]
+	path = PhoneNumber
+	url = https://github.com/xdtianyu/PhoneNumber.git
+[submodule "config"]
+	path = config
+	url = https://github.com/xdtianyu/AppConfig.git
